@@ -1,5 +1,6 @@
 package com.example.task_service.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -28,5 +29,9 @@ public interface TaskRepository
 
     Page<TaskEntity> findAll(
             Pageable pageable
+    );
+      List<TaskEntity> findByDeadlineBetween(
+            Timestamp start,
+            Timestamp end
     );
 }

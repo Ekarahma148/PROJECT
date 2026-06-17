@@ -12,6 +12,7 @@ import com.example.user_service.utility.Message;
 
 import jakarta.validation.Valid;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -181,6 +182,34 @@ public ResponseEntity<?> register(
             )
     );
 
+}
+@GetMapping("/id/{id}")
+public ResponseEntity getUserById(
+        @PathVariable Long id
+) {
+
+    try {
+
+        UserPayloadReq req =
+                new UserPayloadReq();
+
+        req.setIdReq(id);
+
+        return new Message()
+                .getData(
+                        "Success",
+                        userService.getUserById(req),
+                        200
+                );
+
+    } catch (Exception e) {
+
+        return new Message()
+                .error(
+                        e.getMessage(),
+                        500
+                );
+    }
 }
 
 }
