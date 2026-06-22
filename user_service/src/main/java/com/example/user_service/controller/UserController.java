@@ -12,204 +12,136 @@ import com.example.user_service.utility.Message;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    UserService userService;
+        @Autowired
+        UserService userService;
 
-    @GetMapping("/getUser")
-    public ResponseEntity getUser(
-            @RequestBody UserPayloadReq payload
-    ) {
+        @GetMapping("/getByEmail")
+        public UserPayloadRes getByEmail(
+                        @RequestParam String email) throws Exception {
 
-        try {
+                UserPayloadReq payload = new UserPayloadReq();
 
-            UserPayloadRes result =
-                    userService.getUserById(payload);
+                payload.setEmailReq(email);
 
-            return new Message()
-                    .getData("Success", result, 200);
-
-        } catch (Exception e) {
-
-            return new Message()
-                    .error(
-                            "Terjadi error: "
-                                    + e.getMessage(),
-                            500
-                    );
+                return userService.getByEmail(payload);
         }
-    }
-    @GetMapping("/getByEmail")
-public UserPayloadRes getByEmail(
-        @RequestParam String email
-) throws Exception {
 
-    UserPayloadReq payload =
-            new UserPayloadReq();
+        @GetMapping("/getAllUser")
+        public ResponseEntity getAllUsers() {
 
-    payload.setEmailReq(email);
+                try {
 
-    return userService.getByEmail(payload);
-}
-    @GetMapping("/getAllUser")
-    public ResponseEntity getAllUsers() {
+                        return new Message()
+                                        .getData(
+                                                        "Success",
+                                                        userService.getAllUsers(),
+                                                        200);
 
-        try {
+                } catch (Exception e) {
 
-            return new Message()
-                    .getData(
-                            "Success",
-                            userService.getAllUsers(),
-                            200
-                    );
-
-        } catch (Exception e) {
-
-            return new Message()
-                    .error(
-                            "Terjadi error: "
-                                    + e.getMessage(),
-                            500
-                    );
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error: "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
         }
-    }
 
-    @PostMapping("/insertUser")
-    public ResponseEntity createtUser(
-            @RequestBody UserPayloadReq payload
-    ) {
+        @PutMapping("/updateUser")
+        public ResponseEntity updateUser(
+                        @RequestBody UserPayloadReq payload) {
 
-        try {
+                try {
 
-            return new Message()
-                    .getData(
-                            "Insert Success",
-                            userService.createUser(payload),
-                            200
-                    );
+                        return new Message()
+                                        .getData(
+                                                        "Update Success",
+                                                        userService.updateUser(payload),
+                                                        200);
 
-        } catch (Exception e) {
+                } catch (Exception e) {
 
-            return new Message()
-                    .error(
-                            "Terjadi error: "
-                                    + e.getMessage(),
-                            500
-                    );
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error: "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
         }
-    }
 
-    @PutMapping("/updateUser")
-    public ResponseEntity updateUser(
-            @RequestBody UserPayloadReq payload
-    ) {
+        @DeleteMapping("/deleteUser")
+        public ResponseEntity deleteUser(
+                        @RequestBody UserPayloadReq payload) {
 
-        try {
+                try {
 
-            return new Message()
-                    .getData(
-                            "Update Success",
-                            userService.updateUser(payload),
-                            200
-                    );
+                        userService.deleteUser(payload);
 
-        } catch (Exception e) {
+                        return new Message()
+                                        .getData(
+                                                        "Delete Success",
+                                                        null,
+                                                        200);
 
-            return new Message()
-                    .error(
-                            "Terjadi error: "
-                                    + e.getMessage(),
-                            500
-                    );
+                } catch (Exception e) {
+
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error: "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
         }
-    }
 
-    @DeleteMapping("/deleteUser")
-    public ResponseEntity deleteUser(
-            @RequestBody UserPayloadReq payload
-    ) {
+        @GetMapping("/username/{username}")
+        public ResponseEntity<?> getByUsername(
+                        @PathVariable String username) throws Exception {
 
-        try {
+                UserPayloadReq req = new UserPayloadReq();
 
-            userService.deleteUser(payload);
+                req.setUsernameReq(username);
 
-            return new Message()
-                    .getData(
-                            "Delete Success",
-                            null,
-                            200
-                    );
-
-        } catch (Exception e) {
-
-            return new Message()
-                    .error(
-                            "Terjadi error: "
-                                    + e.getMessage(),
-                            500
-                    );
+                return ResponseEntity.ok(
+                                userService.getByUsername(req));
         }
-    }
 
-@GetMapping("/username/{username}")
-public ResponseEntity<?> getByUsername(
-        @PathVariable String username
-) throws Exception {
+        @PostMapping("/register")
+        public ResponseEntity<?> register(
+                        @RequestBody @Valid RegisterPayloadReq payload) throws Exception {
 
-    UserPayloadReq req =
-            new UserPayloadReq();
+                return ResponseEntity.ok(
+                                userService.registerUser(
+                                                payload));
 
-    req.setUsernameReq(username);
+        }
 
-    return ResponseEntity.ok(
-            userService.getByUsername(req)
-    );
-}
-@PostMapping("/register")
-public ResponseEntity<?> register(
-        @RequestBody
-        @Valid
-        RegisterPayloadReq payload
-) throws Exception {
+        @GetMapping("/id/{id}")
+        public ResponseEntity getUserById(
+                        @PathVariable Long id) {
 
-    return ResponseEntity.ok(
-            userService.registerUser(
-                    payload
-            )
-    );
+                try {
 
-}
-@GetMapping("/id/{id}")
-public ResponseEntity getUserById(
-        @PathVariable Long id
-) {
+                        UserPayloadReq req = new UserPayloadReq();
 
-    try {
+                        req.setIdReq(id);
 
-        UserPayloadReq req =
-                new UserPayloadReq();
+                        return new Message()
+                                        .getData(
+                                                        "Success",
+                                                        userService.getUserById(req),
+                                                        200);
 
-        req.setIdReq(id);
+                } catch (Exception e) {
 
-        return new Message()
-                .getData(
-                        "Success",
-                        userService.getUserById(req),
-                        200
-                );
-
-    } catch (Exception e) {
-
-        return new Message()
-                .error(
-                        e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        e.getMessage(),
+                                                        500);
+                }
+        }
 
 }

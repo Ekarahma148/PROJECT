@@ -18,69 +18,60 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+        @Autowired
+        private JwtUtil jwtUtil;
 
-    @Override
-    protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain
-    ) throws ServletException, IOException {
+        @Override
+        protected void doFilterInternal(
+                        HttpServletRequest request,
+                        HttpServletResponse response,
+                        FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getServletPath();
+                String path = request.getServletPath();
 
-        System.out.println("PATH : " + path);
+                System.out.println("PATH : " + path);
 
-        // SKIP LOGIN AUTH
-        if (path.startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
+                // SKIP LOGIN AUTH
+                if (path.startsWith("/auth")) {
+                        filterChain.doFilter(request, response);
+                        return;
+                }
+
+                System.out.println("JWT FILTER HIT");
+
+                String authHeader = request.getHeader("Authorization");
+
+                System.out.println("Test token: " + authHeader);
+
+                if (authHeader != null &&
+                                authHeader.startsWith("Bearer ")) {
+
+                        String token = authHeader.substring(7);
+
+                        if (jwtUtil.isValid(token)) {
+
+                                String username = jwtUtil.extractUsername(token);
+
+                                User user = new User(
+                                                username,
+                                                "",
+                                                java.util.List.of());
+
+                                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                                user,
+                                                null,
+                                                user.getAuthorities());
+
+                                auth.setDetails(
+                                                new WebAuthenticationDetailsSource()
+                                                                .buildDetails(request));
+
+                                SecurityContextHolder
+                                                .getContext()
+                                                .setAuthentication(auth);
+                        }
+                }
+
+                filterChain.doFilter(request, response);
         }
-
-        System.out.println("JWT FILTER HIT");
-
-        String authHeader =
-                request.getHeader("Authorization");
-
-        System.out.println("Test token: " + authHeader);
-
-        if (authHeader != null &&
-                authHeader.startsWith("Bearer ")) {
-
-            String token =
-                    authHeader.substring(7);
-
-            if (jwtUtil.isValid(token)) {
-
-                String username =
-                        jwtUtil.extractUsername(token);
-
-                User user =
-                        new User(
-                                username,
-                                "",
-                                java.util.List.of()
-                        );
-
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                user.getAuthorities()
-                        );
-
-                auth.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(auth);
-            }
-        }
-
-        filterChain.doFilter(request, response);
-    }
 }

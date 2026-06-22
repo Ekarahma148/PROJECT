@@ -3,16 +3,17 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
-  Plus,
   ArrowRight,
   Calendar,
 } from "lucide-react";
-import MainLayout from "../components/MainLayout";
+
+import { useNavigate } from "react-router-dom";
+import MainLayout from "../../components/MainLayout";
 import { useEffect, useState } from "react";
-import { getAllTask } from "../services/taskService";
+import { getAllTask } from "../../services/taskService";
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     loadData();
   }, []);
@@ -39,20 +40,46 @@ function Dashboard() {
   const summary = {
     total: tasks.length,
 
-    completed: tasks.filter((t) => t.statusRes === "COMPLETED").length,
+    completed: tasks.filter(
+      (t) => t.statusRes === "COMPLETED" || t.statusRes === "FINISH",
+    ).length,
 
     pending: tasks.filter(
       (t) => t.statusRes === "PENDING" || t.statusRes === "IN_PROGRESS",
     ).length,
 
     overdue: tasks.filter(
-      (t) => new Date(t.deadlineRes) < now && t.statusRes !== "COMPLETED",
+      (t) =>
+        new Date(t.deadlineRes) < now &&
+        t.statusRes !== "COMPLETED" &&
+        t.statusRes !== "FINISH",
     ).length,
   };
 
-  const recentTasks = [...tasks]
+  const recentTasks = tasks
+    .filter(
+      (task) => task.statusRes !== "COMPLETED" && task.statusRes !== "FINISH",
+    )
     .sort((a, b) => new Date(a.deadlineRes) - new Date(b.deadlineRes))
     .slice(0, 5);
+  const nearestDeadline = tasks
+    .filter(
+      (task) => task.statusRes !== "COMPLETED" && task.statusRes !== "FINISH",
+    )
+    .sort((a, b) => new Date(a.deadlineRes) - new Date(b.deadlineRes))[0];
+  const getRemainingTime = (deadline) => {
+    const diff = new Date(deadline) - new Date();
+
+    if (diff <= 0) return "Deadline lewat";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `Sisa ${days} Hari`;
+
+    return `Sisa ${hours} Jam`;
+  };
   const username = localStorage.getItem("username") || "eka3";
 
   // Hitung persentase penyelesaian untuk progress bar
@@ -76,11 +103,6 @@ function Dashboard() {
                 real-time.
               </p>
             </div>
-            {/* Quick Action Button */}
-            <button className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm shadow-indigo-100 transition-all text-sm active:scale-95 self-start sm:self-center">
-              <Plus size={18} />
-              Tambah Tugas
-            </button>
           </div>
         </div>
 
@@ -192,8 +214,11 @@ function Dashboard() {
                     Daftar agenda terdekat yang perlu Anda perhatikan.
                   </p>
                 </div>
-                <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
-                  Lihat Semua <ArrowRight size={16} />
+                <button
+                  onClick={() => navigate("/tasks")}
+                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                >
+                  Lihat Semua <ArrowRight size={12} />
                 </button>
               </div>
 
@@ -201,8 +226,8 @@ function Dashboard() {
                 {recentTasks.map((task) => {
                   const isOverdue =
                     new Date(task.deadlineRes) < new Date() &&
-                    task.statusRes !== "COMPLETED";
-
+                    task.statusRes !== "COMPLETED" &&
+                    task.statusRes !== "FINISH";
                   return (
                     <div
                       key={task.idRes}
@@ -214,10 +239,18 @@ function Dashboard() {
                         </p>
 
                         <div className="flex items-center gap-4 text-xs text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Calendar size={12} />
-                            {new Date(task.deadlineRes).toLocaleString("id-ID")}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} />
+                              {new Date(task.deadlineRes).toLocaleString(
+                                "id-ID",
+                              )}
+                            </span>
+
+                            <span className="text-[10px] text-rose-500 font-semibold">
+                              {getRemainingTime(task.deadlineRes)}
+                            </span>
+                          </div>
 
                           <span
                             className={`px-2 py-0.5 rounded-md font-medium text-[10px]
@@ -235,7 +268,8 @@ function Dashboard() {
                       </div>
 
                       <div>
-                        {task.statusRes === "COMPLETED" && (
+                        {(task.statusRes === "COMPLETED" ||
+                          task.statusRes === "FINISH") && (
                           <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-100">
                             Selesai
                           </span>
@@ -282,9 +316,30 @@ function Dashboard() {
                 <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
                   Fokus Hari Ini
                 </p>
-                <p className="text-xl font-extrabold text-indigo-950 mt-1">
-                  Selesaikan 2 Tugas
-                </p>
+
+                {nearestDeadline ? (
+                  <>
+                    <p className="text-lg font-bold text-indigo-950 mt-2">
+                      {nearestDeadline.titleRes}
+                    </p>
+
+                    <p className="text-xs text-slate-500 mt-2">Deadline:</p>
+
+                    <p className="text-sm font-semibold text-rose-600">
+                      {new Date(nearestDeadline.deadlineRes).toLocaleString(
+                        "id-ID",
+                      )}
+                    </p>
+
+                    <p className="text-xs text-amber-600 mt-2 font-semibold">
+                      {getRemainingTime(nearestDeadline.deadlineRes)}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-lg font-bold text-emerald-600 mt-2">
+                    Semua Tugas Selesai
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -2,7 +2,6 @@ package com.example.task_service.payload.req;
 
 import java.sql.Timestamp;
 
-import jakarta.persistence.Column;
 
 public class TaskPayloadReq {
     private Long idReq;

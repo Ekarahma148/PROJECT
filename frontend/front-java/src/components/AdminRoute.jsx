@@ -1,12 +1,15 @@
 import { Navigate } from "react-router-dom";
 
 function AdminRoute({ children }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  const role =
-    localStorage.getItem("role");
+  if (!token) {
+    return <Navigate to="/403" replace />;
+  }
 
   if (role !== "ADMIN") {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/403" replace />;
   }
 
   return children;

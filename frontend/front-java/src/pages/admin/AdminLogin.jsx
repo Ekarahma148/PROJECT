@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shield, User, Lock, Loader2 } from "lucide-react";
-import { loginJwt, getUserByUsername } from "../services/authService";
+import { loginJwt, getUserByUsername } from "../../services/authService";
 
 function AdminLogin() {
   const [form, setForm] = useState({

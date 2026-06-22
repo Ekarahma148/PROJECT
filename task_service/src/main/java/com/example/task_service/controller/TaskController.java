@@ -1,8 +1,14 @@
 package com.example.task_service.controller;
 
+import java.io.ByteArrayInputStream;
+
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.task_service.payload.req.TaskPayloadReq;
 import com.example.task_service.payload.res.TaskPayloadRes;
@@ -13,242 +19,261 @@ import com.example.task_service.utility.Message;
 @RequestMapping("/tasks")
 public class TaskController {
 
-@Autowired
-TaskService taskService;
+        @Autowired
+        TaskService taskService;
 
-@GetMapping("/getTask")
-public ResponseEntity getTask(
-        @RequestBody TaskPayloadReq payload
-) {
+        @GetMapping("/getTask")
+        public ResponseEntity getTask(
+                        @RequestBody TaskPayloadReq payload) {
 
-    try {
+                try {
 
-        TaskPayloadRes result =
-                taskService.getTaskById(payload);
+                        TaskPayloadRes result = taskService.getTaskById(payload);
 
-        return new Message()
-                .getData("Success", result, 200);
+                        return new Message()
+                                        .getData("Success", result, 200);
 
-    } catch (Exception e) {
+                } catch (Exception e) {
 
-        return new Message()
-                .error(
-                        "Terjadi error : "
-                                + e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error : "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
+        }
 
-@GetMapping("/getAllTask")
-public ResponseEntity getAllTask() {
+        @GetMapping("/getAllTask")
+        public ResponseEntity getAllTask() {
 
-    try {
+                try {
 
-        return new Message()
-                .getData(
-                        "Success",
-                        taskService.getAllTask(),
-                        200
-                );
+                        return new Message()
+                                        .getData(
+                                                        "Success",
+                                                        taskService.getAllTask(),
+                                                        200);
 
-    } catch (Exception e) {
+                } catch (Exception e) {
 
-        return new Message()
-                .error(
-                        "Terjadi error : "
-                                + e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error : "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
+        }
 
-@PostMapping("/insertTask")
-public ResponseEntity createTask(
-        @RequestBody TaskPayloadReq payload
-) {
+        @PostMapping("/insertTask")
+        public ResponseEntity createTask(
+                        @RequestBody TaskPayloadReq payload) {
 
-    try {
+                try {
 
-        return new Message()
-                .getData(
-                        "Insert Success",
-                        taskService.createTask(payload),
-                        200
-                );
+                        return new Message()
+                                        .getData(
+                                                        "Insert Success",
+                                                        taskService.createTask(payload),
+                                                        200);
 
-    } catch (Exception e) {
+                } catch (Exception e) {
 
-        return new Message()
-                .error(
-                        "Terjadi error : "
-                                + e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error : "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
+        }
 
-@PutMapping("/updateTask")
-public ResponseEntity updateTask(
-        @RequestBody TaskPayloadReq payload
-) {
+        @PutMapping("/updateTask")
+        public ResponseEntity updateTask(
+                        @RequestBody TaskPayloadReq payload) {
 
-    try {
+                try {
 
-        return new Message()
-                .getData(
-                        "Update Success",
-                        taskService.updateTask(payload),
-                        200
-                );
+                        return new Message()
+                                        .getData(
+                                                        "Update Success",
+                                                        taskService.updateTask(payload),
+                                                        200);
 
-    } catch (Exception e) {
+                } catch (Exception e) {
 
-        return new Message()
-                .error(
-                        "Terjadi error : "
-                                + e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error : "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
+        }
 
-@DeleteMapping("/deleteTask")
-public ResponseEntity deleteTask(
-        @RequestBody TaskPayloadReq payload
-) {
+        @DeleteMapping("/deleteTask")
+        public ResponseEntity deleteTask(
+                        @RequestBody TaskPayloadReq payload) {
 
-    try {
+                try {
 
-        taskService.deleteTask(payload);
+                        taskService.deleteTask(payload);
 
-        return new Message()
-                .getData(
-                        "Delete Success",
-                        null,
-                        200
-                );
+                        return new Message()
+                                        .getData(
+                                                        "Delete Success",
+                                                        null,
+                                                        200);
 
-    } catch (Exception e) {
+                } catch (Exception e) {
 
-        return new Message()
-                .error(
-                        "Terjadi error : "
-                                + e.getMessage(),
-                        500
-                );
-    }
-}
+                        return new Message()
+                                        .error(
+                                                        "Terjadi error : "
+                                                                        + e.getMessage(),
+                                                        500);
+                }
+        }
 
-@GetMapping("/search")
-public ResponseEntity searchTask(
-        @RequestParam String title
-) {
+        @GetMapping("/list")
+        public ResponseEntity getTaskList(
 
-    try {
+                        @RequestParam Long userId,
+                        @RequestParam(defaultValue = "") String title,
 
-        TaskPayloadReq req =
-                new TaskPayloadReq();
+                        @RequestParam(defaultValue = "") String status,
 
-        req.setTitleReq(title);
+                        @RequestParam(defaultValue = "") String priority,
 
-        return new Message()
-                .getData(
-                        "Success",
-                        taskService.searchTask(req),
-                        200
-                );
+                        @RequestParam(defaultValue = "0") Integer page,
 
-    } catch (Exception e) {
+                        @RequestParam(defaultValue = "5") Integer size
 
-        return new Message()
-                .error(
-                        e.getMessage(),
-                        500
-                );
-    }
-}
-@GetMapping("/filterStatus")
-public ResponseEntity filterStatus(
-        @RequestParam String status
-) {
+        ) {
 
-    try {
+                try {
 
-        TaskPayloadReq req =
-                new TaskPayloadReq();
+                        return new Message()
+                        .getData(
+                                "Success",
+                                taskService.getTaskList(
+                                        userId,
+                                        title,
+                                        status,
+                                        priority,
+                                        page,
+                                        size),
+                                        200);
 
-        req.setStatusReq(status);
+                } catch (Exception e) {
 
-        return new Message()
-                .getData(
-                        "Success",
-                        taskService.filterByStatus(req),
-                        200
-                );
+                        return new Message()
+                                        .error(
+                                                        e.getMessage(),
+                                                        500);
+                }
+        }
 
-    } catch (Exception e) {
+        @PostMapping("/uploadExcel")
+        public ResponseEntity<?> uploadExcel(
+                        @RequestParam("file") MultipartFile file,
+                        @RequestParam("userId") Long userId) {
 
-        return new Message()
-                .error(
-                        e.getMessage(),
-                        500
-                );
-    }
-}
-@GetMapping("/filterPriority")
-public ResponseEntity filterPriority(
-        @RequestParam String priority
-) {
+                try {
 
-    try {
+                        taskService.uploadExcel(
+                                        file,
+                                        userId);
 
-        TaskPayloadReq req =
-                new TaskPayloadReq();
+                        return ResponseEntity.ok(
+                                        "Upload berhasil");
 
-        req.setPriorityReq(priority);
+                } catch (Exception e) {
 
-        return new Message()
-                .getData(
-                        "Success",
-                        taskService.filterByPriority(req),
-                        200
-                );
+                        return ResponseEntity.badRequest()
+                                        .body(e.getMessage());
+                }
+        }
 
-    } catch (Exception e) {
+        @GetMapping("/downloadExcel")
+        public ResponseEntity<InputStreamResource> downloadExcel() {
 
-        return new Message()
-                .error(
-                        e.getMessage(),
-                        500
-                );
-    }
-}
-@GetMapping("/pagination")
-public ResponseEntity pagination(
-        @RequestParam Integer page,
-        @RequestParam Integer size
-) {
+                try {
 
-    try {
+                        ByteArrayInputStream in = taskService.downloadExcel();
 
-        return new Message()
-                .getData(
-                        "Success",
-                        taskService.getTaskPagination(
-                                page,
-                                size
-                        ),
-                        200
-                );
+                        HttpHeaders headers = new HttpHeaders();
 
-    } catch (Exception e) {
+                        headers.add(
+                                        "Content-Disposition",
+                                        "attachment; filename=data_task.xlsx");
 
-        return new Message()
-                .error(
-                        e.getMessage(),
-                        500
-                );
-    }
-}
+                        return ResponseEntity.ok()
+                                        .headers(headers)
+                                        .contentType(
+                                                        MediaType.APPLICATION_OCTET_STREAM)
+                                        .body(
+                                                        new InputStreamResource(in));
+
+                } catch (Exception e) {
+
+                        return ResponseEntity.internalServerError()
+                                        .build();
+                }
+        }
+
+        @GetMapping("/downloadTemplate")
+        public ResponseEntity<InputStreamResource> downloadTemplate() {
+
+                try {
+
+                        ByteArrayInputStream in = taskService.generateUploadTemplate();
+
+                        HttpHeaders headers = new HttpHeaders();
+
+                        headers.add(
+                                        "Content-Disposition",
+                                        "attachment; filename=template_task.xlsx");
+
+                        return ResponseEntity.ok()
+                                        .headers(headers)
+                                        .contentType(
+                                                        MediaType.APPLICATION_OCTET_STREAM)
+                                        .body(
+                                                        new InputStreamResource(in));
+
+                } catch (Exception e) {
+
+                        return ResponseEntity.internalServerError()
+                                        .build();
+                }
+        }
+
+        @GetMapping("/downloadExcelUser")
+        public ResponseEntity<InputStreamResource> downloadExcelUser(
+                        @RequestParam Long userId) {
+
+                try {
+
+                        ByteArrayInputStream in = taskService
+                                        .downloadExcelByUserId(
+                                                        userId);
+
+                        HttpHeaders headers = new HttpHeaders();
+
+                        headers.add(
+                                        "Content-Disposition",
+                                        "attachment; filename=my_task.xlsx");
+
+                        return ResponseEntity.ok()
+                                        .headers(headers)
+                                        .contentType(
+                                                        MediaType.APPLICATION_OCTET_STREAM)
+                                        .body(
+                                                        new InputStreamResource(in));
+
+                } catch (Exception e) {
+
+                        return ResponseEntity
+                                        .internalServerError()
+                                        .build();
+                }
+        }
 }

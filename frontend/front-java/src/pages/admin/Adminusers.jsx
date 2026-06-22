@@ -9,19 +9,19 @@ import {
   Users,
   Hash
 } from "lucide-react";
-import AdminLayout from "../components/AdminLayout";
+import AdminLayout from "../../components/AdminLayout";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const API = import.meta.env.VITE_USER_API;
+  const API = import.meta.env.VITE_API;
 
   const loadUsers = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get(`${API}/users/getAllUser`);
+      const res = await axios.get(`${API}/userSvc/users/getAllUser`);
       setUsers(res.data.data || []);
     } catch (err) {
       console.log(err);
@@ -39,7 +39,7 @@ function AdminUsers() {
       return;
 
     try {
-      await axios.delete(`${API}/users/deleteUser`, {
+      await axios.delete(`${API}/userSvc/users/deleteUser`, {
         data: {
           idReq: id,
         },

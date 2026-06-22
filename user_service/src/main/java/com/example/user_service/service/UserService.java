@@ -10,10 +10,6 @@ import com.example.user_service.payload.res.UserPayloadRes;
 
 public interface UserService {
 
-    UserPayloadRes createUser(
-            UserPayloadReq payload
-    ) throws Exception;
-
     List<UserPayloadRes> getAllUsers()
             throws Exception;
 

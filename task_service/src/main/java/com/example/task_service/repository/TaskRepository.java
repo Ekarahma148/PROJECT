@@ -15,23 +15,12 @@ public interface TaskRepository
         extends JpaRepository<TaskEntity, Long> {
 
     TaskEntity getTaskById(Long id);
-    List<TaskEntity> findByTitleContainingIgnoreCase(
-            String title
-    );
-
-    List<TaskEntity> findByStatus(
-            String status
-    );
-
-    List<TaskEntity> findByPriority(
-         String priority
-    );
-
-    Page<TaskEntity> findAll(
-            Pageable pageable
-    );
+    Page<TaskEntity> findByUserIdAndTitleContainingIgnoreCaseAndStatusContainingIgnoreCaseAndPriorityContainingIgnoreCase(
+    Long userId, String title, String status, String priority, Pageable pageable
+);
       List<TaskEntity> findByDeadlineBetween(
             Timestamp start,
             Timestamp end
     );
+     List<TaskEntity> findByUserId(Long userId);
 }

@@ -1,33 +1,99 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import TaskList from "./pages/TaskList";
-import Profile from "./pages/Profile";
-// import UserManagement from "./pages/UserManagement";
-import AdminDashboard from "./pages/AdminDashboard";
-// import AdminRoute from "./components/AdminRoute";
-import AdminLogin from "./pages/AdminLogin";
-import AdminUsers from "./pages/Adminusers";
-import AdminTaskMonitoring from "./pages/AdminTaskMonitoring";
+import Login from "./pages/user/Login";
+import Register from "./pages/user/Register";
+import Dashboard from "./pages/user/Dashboard";
+import TaskList from "./pages/user/TaskList";
+import Profile from "./pages/user/Profile";
+
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminUsers from "./pages/admin/Adminusers";
+import AdminTaskMonitoring from "./pages/admin/AdminTaskMonitoring";
+
+import Forbidden from "./pages/Forbidden";
+import NotFound from "./pages/NotFound";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tasks" element={<TaskList />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/tasks" element={<AdminTaskMonitoring />} />
+        {/* PUBLIC */}
 
-        {/* <Route path="/admin/users" element={<AdminUsers />} /> */}
+        <Route path="/" element={<Login />} />
+
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* USER */}
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <TaskList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN */}
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/tasks"
+          element={
+            <AdminRoute>
+              <AdminTaskMonitoring />
+            </AdminRoute>
+          }
+        />
+
+        {/* ERROR */}
+
+        <Route path="/403" element={<Forbidden />} />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

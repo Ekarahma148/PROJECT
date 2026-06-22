@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { User, Mail, Tag, Lock, Loader2, Sparkles } from "lucide-react";
-import { registerUser } from "../services/userService";
+import { registerUser } from "../../services/userService";
 
 function Register() {
   const [form, setForm] = useState({
@@ -27,7 +27,6 @@ function Register() {
 
   return (
     <div className="min-h-screen flex bg-slate-950 font-sans">
-      {/* SISI KIRI: Ajakan Menarik & Manfaat Aplikasi */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 p-12 flex-col justify-between overflow-hidden border-r border-slate-800">
         <div className="absolute -left-10 -top-10 w-85 h-85 bg-indigo-500/10 rounded-full blur-3xl"></div>
 
@@ -46,7 +45,6 @@ function Register() {
             Bergabunglah bersama ribuan profesional lainnya untuk menyusun, menjadwalkan, dan mengeksekusi rencana kerja harian Anda tanpa hambatan.
           </p>
           
-          {/* Fitur list kecil */}
           <div className="space-y-3 pt-4 border-t border-slate-800/60">
             <div className="flex items-center gap-3 text-sm text-slate-300">
               <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span> Workspace Personal Responsif
@@ -62,7 +60,6 @@ function Register() {
         </p>
       </div>
 
-      {/* SISI KANAN: Form Pembuatan Akun */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-900 overflow-y-auto">
         <div className="w-full max-w-md space-y-6 my-auto py-8">
           <div>

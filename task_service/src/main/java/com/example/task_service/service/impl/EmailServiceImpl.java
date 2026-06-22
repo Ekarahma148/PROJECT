@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -27,313 +28,176 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.task_service.entity.TaskEntity;
 import com.example.task_service.payload.req.EmailPayloadReq;
-import com.example.task_service.payload.res.UserPayloadRes;
 import com.example.task_service.repository.TaskRepository;
 import com.example.task_service.service.EmailService;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    @Autowired
-private TaskRepository taskRepository;
-@Autowired
-private RestTemplate restTemplate;
-    @Value("${smtp.host}")
-    private String smtpHost;
+        @Autowired
+        private TaskRepository taskRepository;
+        @Autowired
+        private RestTemplate restTemplate;
+        
+        @Value("${smtp.host}")
+        private String smtpHost;
 
-    @Value("${smtp.port}")
-    private int smtpPort;
+        @Value("${smtp.port}")
+        private int smtpPort;
 
-   @Override
-    @Scheduled(fixedRate = 60000) // Berjalan tiap 1 menit
-    public void schedulerEmail() {
-        try {
-            // 1. Pastikan menggunakan Zona Waktu Indonesia Barat (WIB / GMT+7)
-            ZoneId jktZone = ZoneId.of("Asia/Jakarta");
-            LocalDateTime now = LocalDateTime.now(jktZone);
+        @Override
+        @Scheduled(fixedRate = 60000) 
+        public void schedulerEmail() {
+                try {
+                        // 1. Pastikan menggunakan Zona Waktu Indonesia Barat (WIB / GMT+7)
+                        ZoneId jktZone = ZoneId.of("Asia/Jakarta");
+                        LocalDateTime now = LocalDateTime.now(jktZone);
 
-            // ==================== LOGIKA H-1 HARI ====================
-            // Buat range 1 menit penuh untuk mendeteksi deadline besok di menit yang sama
-            LocalDateTime targetDay = now.plusDays(1);
-            Timestamp dayStart = Timestamp.valueOf(targetDay.withSecond(0).withNano(0));
-            Timestamp dayEnd = Timestamp.valueOf(targetDay.withSecond(59).withNano(999999999));
+                        // ==================== LOGIKA H-1 HARI ====================
+                        LocalDateTime targetDay = now.plusDays(1);
+                        Timestamp dayStart = Timestamp.valueOf(targetDay.withSecond(0).withNano(0));
+                        Timestamp dayEnd = Timestamp.valueOf(targetDay.withSecond(59).withNano(999999999));
 
-            // ==================== LOGIKA H-1 JAM ====================
-            // Buat range 1 menit penuh untuk mendeteksi deadline 1 jam lagi di menit yang sama
-            LocalDateTime targetHour = now.plusHours(1);
-            Timestamp hourStart = Timestamp.valueOf(targetHour.withSecond(0).withNano(0));
-            Timestamp hourEnd = Timestamp.valueOf(targetHour.withSecond(59).withNano(999999999));
+                        // ==================== LOGIKA H-1 JAM ====================
+                        LocalDateTime targetHour = now.plusHours(1);
+                        Timestamp hourStart = Timestamp.valueOf(targetHour.withSecond(0).withNano(0));
+                        Timestamp hourEnd = Timestamp.valueOf(targetHour.withSecond(59).withNano(999999999));
 
-            System.out.println("--- SCHEDULER CHECK (" + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ") ---");
-            System.out.println("Mencari H-1 Hari antara: " + dayStart + " s/d " + dayEnd);
-            System.out.println("Mencari H-1 Jam antara : " + hourStart + " s/d " + hourEnd);
+                        System.out.println("--- SCHEDULER CHECK ("
+                                        + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ") ---");
+                        System.out.println("Mencari H-1 Hari antara: " + dayStart + " s/d " + dayEnd);
+                        System.out.println("Mencari H-1 Jam antara : " + hourStart + " s/d " + hourEnd);
 
-            // 2. Ambil data task dari database
-            List<TaskEntity> oneDayTasks = taskRepository.findByDeadlineBetween(dayStart, dayEnd);
-            List<TaskEntity> oneHourTasks = taskRepository.findByDeadlineBetween(hourStart, hourEnd);
+                        // 2. Ambil data task dari database
+                        List<TaskEntity> oneDayTasks = taskRepository.findByDeadlineBetween(dayStart, dayEnd);
+                        List<TaskEntity> oneHourTasks = taskRepository.findByDeadlineBetween(hourStart, hourEnd);
 
-            // 3. Kirim jika ada task yang ditemukan
-            if (!oneDayTasks.isEmpty()) {
-                sendReminder(oneDayTasks, "1 Hari");
-            }
+                        // 3. Kirim jika ada task yang ditemukan
+                        if (!oneDayTasks.isEmpty()) {
+                                sendReminder(oneDayTasks, "1 Hari");
+                        }
 
-            if (!oneHourTasks.isEmpty()) {
-                sendReminder(oneHourTasks, "1 Jam");
-            }
+                        if (!oneHourTasks.isEmpty()) {
+                                sendReminder(oneHourTasks, "1 Jam");
+                        }
 
-        } catch (Exception e) {
-            System.err.println("Gagal menjalankan scheduler email:");
-            e.printStackTrace();
+                } catch (Exception e) {
+                        System.err.println("Gagal menjalankan scheduler email:");
+                        e.printStackTrace();
+                }
         }
-    }
 
-    @Override
-    public void sendEmail(
-            EmailPayloadReq payload
-    ) throws Exception {
-        try {
+        @Override
+        public void sendEmail(EmailPayloadReq payload) throws Exception {
+                try {
+                        InternetAddress[] senderEmailWithoutName = InternetAddress.parse(payload.getSenderEmail());
+                        Properties props = new Properties();
 
-            InternetAddress[] senderEmailWithoutName =
-                    InternetAddress.parse(
-                            payload.getSenderEmail()
-                    );
+                        props.put("mail.smtp.auth", "true");
+                        props.put("mail.smtp.starttls.enable", "true");
+                        props.put("mail.smtp.host", smtpHost);
+                        props.put("mail.smtp.port", smtpPort);
 
-            Properties props =
-                    new Properties();
-
-            props.put(
-                    "mail.smtp.auth",
-                    "true"
-            );
-
-            props.put(
-                    "mail.smtp.starttls.enable",
-                    "true"
-            );
-
-            props.put(
-                    "mail.smtp.host",
-                    smtpHost
-            );
-
-            props.put(
-                    "mail.smtp.port",
-                    smtpPort
-            );
-
-            Session session =
-                    Session.getInstance(
-                            props,
-                            new javax.mail.Authenticator() {
-
+                        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
                                 protected PasswordAuthentication getPasswordAuthentication() {
-
-                                    return new PasswordAuthentication(
-                                            senderEmailWithoutName[0].getAddress(),
-                                            payload.getSenderPassword()
-                                    );
+                                        return new PasswordAuthentication(
+                                                        senderEmailWithoutName[0].getAddress(),
+                                                        payload.getSenderPassword());
                                 }
-                            }
-                    );
+                        });
 
-            LocalDateTime currentDateTime =
-                    LocalDateTime.now();
+                        LocalDateTime currentDateTime = LocalDateTime.now();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String formattedDateTime = currentDateTime.format(formatter);
 
-            DateTimeFormatter formatter =
-                    DateTimeFormatter.ofPattern(
-                            "yyyy-MM-dd HH:mm:ss"
-                    );
+                        Message message = new MimeMessage(session);
+                        message.setFrom(new InternetAddress(payload.getSenderEmail()));
+                        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(payload.getReceiverEmailTo()));
 
-            String formattedDateTime =
-                    currentDateTime.format(
-                            formatter
-                    );
+                        if (payload.getReceiverEmailCc() != null && !payload.getReceiverEmailCc().isEmpty()) {
+                                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(payload.getReceiverEmailCc()));
+                        }
 
-            Message message =
-                    new MimeMessage(
-                            session
-                    );
+                        message.setSubject("Task Reminder - " + formattedDateTime + " - " + payload.getEmailSubject());
 
-            message.setFrom(
-                    new InternetAddress(
-                            payload.getSenderEmail()
-                    )
-            );
+                        MimeBodyPart messageBodyPart = new MimeBodyPart();
+                        messageBodyPart.setContent(payload.getBody(), "text/html;charset=UTF-8");
 
-            message.setRecipients(
-                    Message.RecipientType.TO,
-                    InternetAddress.parse(
-                            payload.getReceiverEmailTo()
-                    )
-            );
+                        Multipart multipart = new MimeMultipart();
+                        multipart.addBodyPart(messageBodyPart);
+                        message.setContent(multipart);
 
-            if (
-                    payload.getReceiverEmailCc() != null
-                            &&
-                            !payload.getReceiverEmailCc().isEmpty()
-            ) {
+                        Transport.send(message);
 
-                message.setRecipients(
-                        Message.RecipientType.CC,
-                        InternetAddress.parse(
-                                payload.getReceiverEmailCc()
-                        )
-                );
-
-            }
-
-            message.setSubject(
-                    "Task Reminder - "
-                            + formattedDateTime
-                            + " - "
-                            + payload.getEmailSubject()
-            );
-
-            MimeBodyPart messageBodyPart =
-                    new MimeBodyPart();
-
-            messageBodyPart.setContent(
-                    payload.getBody(),
-                    "text/html;charset=UTF-8"
-            );
-
-            Multipart multipart =
-                    new MimeMultipart();
-
-            multipart.addBodyPart(
-                    messageBodyPart
-            );
-
-            message.setContent(
-                    multipart
-            );
-
-            Transport.send(
-                    message
-            );
-
-        } catch (MessagingException e) {
-
-            e.printStackTrace();
-
-            throw new RuntimeException(
-                    e
-            );
-
+                } catch (MessagingException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException(e);
+                }
         }
-    }
-    private void sendReminder(
-        List<TaskEntity> tasks,
-        String reminderType
-) {System.out.println(
-        "SEND REMINDER "
-                + reminderType
-                + " -> "
-                + tasks.size()
-                + " TASK"
-);
-    
-    for (TaskEntity task : tasks) {
 
-        try {
+        @SuppressWarnings("unchecked")
+        private void sendReminder(List<TaskEntity> tasks, String reminderType) {
+                System.out.println("SEND REMINDER " + reminderType + " -> " + tasks.size() + " TASK");
 
-            UserPayloadRes user =
-                    restTemplate.getForObject(
-                            "http://localhost:8088/users/id/"
-                                    + task.getUserId(),
-                            UserPayloadRes.class
-                    );
-                    System.out.println(
-        "USER RESPONSE : "
-                + user
-);if(user != null){
+                for (TaskEntity task : tasks) {
+                        try {
+                                // Menggunakan Map.class untuk mengambil response JSON global secara dinamis
+                                Map<String, Object> response = restTemplate.getForObject(
+                                                "http://localhost:8088/users/id/" + task.getUserId(),
+                                                Map.class);
 
-    System.out.println(
-            "EMAIL : "
-                    + user.getEmailRes()
-    );
-}
+                                System.out.println("USER RESPONSE RAW: " + response);
 
-            if (user == null) {
-                continue;
-            }
+                                if (response == null || !response.containsKey("data") || response.get("data") == null) {
+                                        System.out.println("⚠️ SKIP TASK: User dengan ID " + task.getUserId() + " tidak ditemukan.");
+                                        continue;
+                                }
 
-            String body =
-                    "<h2>Task Reminder</h2>"
-                            + "<p>Halo "
-                            + user.getFullnameRes()
-                            + "</p>"
+                                // Ambil inner map dari key "data"
+                                Map<String, Object> dataNode = (Map<String, Object>) response.get("data");
+                                
+                                String emailTarget = dataNode.containsKey("emailRes") && dataNode.get("emailRes") != null 
+                                                ? dataNode.get("emailRes").toString() : null;
+                                                
+                                String fullnameTarget = dataNode.containsKey("fullnameRes") && dataNode.get("fullnameRes") != null 
+                                                ? dataNode.get("fullnameRes").toString() : "User";
 
-                            + "<p>Tugas berikut akan deadline dalam "
-                            + reminderType
-                            + "</p><br>"
+                                System.out.println("EMAIL TARGET : " + emailTarget);
 
-                            + "<b>Title :</b> "
-                            + task.getTitle()
+                                if (emailTarget == null || emailTarget.trim().isEmpty() || emailTarget.equalsIgnoreCase("null")) {
+                                        System.out.println("⚠️ SKIP TASK '" + task.getTitle() + "': Alamat email kosong.");
+                                        continue;
+                                }
 
-                            + "<br><br>"
+                                String body = "<h2>Task Reminder</h2>"
+                                                + "<p>Halo " + fullnameTarget + "</p>"
+                                                + "<p>Tugas berikut akan deadline dalam " + reminderType + "</p><br>"
+                                                + "<b>Title :</b> " + task.getTitle() + "<br><br>"
+                                                + "<b>Description :</b> " + task.getDescription() + "<br><br>"
+                                                + "<b>Priority :</b> " + task.getPriority() + "<br><br>"
+                                                + "<b>Status :</b> " + task.getStatus() + "<br><br>"
+                                                + "<b>Deadline :</b> " + task.getDeadline() + "<br><br>"
+                                                + "<p>Segera selesaikan tugas Anda.</p>";
 
-                            + "<b>Description :</b> "
-                            + task.getDescription()
+                                EmailPayloadReq payload = new EmailPayloadReq();
+                                payload.setSenderEmail("ekaarahma010@gmail.com");
+                                payload.setSenderPassword("skmxrgyqzscqxlrh");
+                                payload.setReceiverEmailTo(emailTarget);
+                                payload.setReceiverEmailCc(null);
+                                payload.setReceiverEmailBcc(null);
+                                payload.setEmailSubject("Task Reminder");
+                                payload.setBody(body);
 
-                            + "<br><br>"
+                                System.out.println("TASK : " + task.getTitle());
+                                System.out.println("DEADLINE : " + task.getDeadline());
 
-                            + "<b>Priority :</b> "
-                            + task.getPriority()
+                                sendEmail(payload);
+                                System.out.println("Reminder terkirim ke " + emailTarget);
 
-                            + "<br><br>"
-
-                            + "<b>Status :</b> "
-                            + task.getStatus()
-
-                            + "<br><br>"
-
-                            + "<b>Deadline :</b> "
-                            + task.getDeadline()
-                            
-                            + "<br><br>"
-                            
-                            + "<p>Segera selesaikan tugas Anda.</p>";
-                            
-                            EmailPayloadReq payload =
-                            new EmailPayloadReq();
-                            
-                            payload.setSenderEmail(
-                                "ekaarahma010@gmail.com"
-                            );
-                            
-                            payload.setSenderPassword(
-                                "skmxrgyqzscqxlrh"
-                            );
-                            
-                            payload.setReceiverEmailTo(
-                                user.getEmailRes()
-                            );
-                            
-                            payload.setReceiverEmailCc(null);
-                            
-                            payload.setReceiverEmailBcc(null);
-                            
-                            payload.setEmailSubject(
-                                "Task Reminder"
-                            );
-                            
-                            payload.setBody(body);
-                            System.out.println("TASK : " + task.getTitle());
-                            System.out.println("DEADLINE : " + task.getDeadline());
-
-            sendEmail(payload);
-
-            System.out.println(
-                    "Reminder terkirim ke "
-                            + user.getEmailRes()
-            );
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
+                        } catch (Exception e) {
+                                System.err.println("Gagal memproses pengiriman reminder untuk task ID: " + task.getId());
+                                e.printStackTrace();
+                        }
+                }
         }
-    }
-}
 }

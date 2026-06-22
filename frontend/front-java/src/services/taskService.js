@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = import.meta.env.VITE_TASK_API;
+const API = import.meta.env.VITE_API;
 
 const authHeader = () => ({
   headers: {
@@ -11,14 +11,14 @@ const authHeader = () => ({
 
 export const getAllTask = () => {
   return axios.get(
-    `${API}/tasks/getAllTask`,
+    `${API}/taskSvc/tasks/getAllTask`,
     authHeader()
   );
 };
 
 export const createTask = (data) => {
   return axios.post(
-    `${API}/tasks/insertTask`,
+    `${API}/taskSvc/tasks/insertTask`,
     data,
     authHeader()
   );
@@ -26,7 +26,7 @@ export const createTask = (data) => {
 
 export const updateTask = (data) => {
   return axios.put(
-    `${API}/tasks/updateTask`,
+    `${API}/taskSvc/tasks/updateTask`,
     data,
     authHeader()
   );
@@ -34,12 +34,26 @@ export const updateTask = (data) => {
 
 export const deleteTask = (id) => {
   return axios.delete(
-    `${API}/tasks/deleteTask`,
+    `${API}/taskSvc/tasks/deleteTask`,
     {
       ...authHeader(),
       data: {
         idReq: id,
       },
     }
+  );
+};
+
+export const getTasks = (
+  userId,
+  page,
+  size,
+  title,
+  status,
+  priority
+) => {
+  return axios.get(
+    `${API}/taskSvc/tasks/list?userId=${userId}&page=${page}&size=${size}&title=${title}&status=${status}&priority=${priority}`,
+    authHeader()
   );
 };

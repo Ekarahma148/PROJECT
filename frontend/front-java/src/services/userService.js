@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const USER_API = import.meta.env.VITE_USER_API;
+const API = import.meta.env.VITE_API;
 
 export const registerUser = async (data) => {
   return axios.post(
-    `${USER_API}/users/register`,
+    `${API}/userSvc/users/register`,
     data
   );
 };
@@ -17,22 +17,24 @@ const authHeader = () => ({
 
 export const getAllUser = () => {
   return axios.get(
-    `${USER_API}/users/getAllUser`,
+    `${API}/userSvc/users/getAllUser`,
     authHeader()
   );
 };
 
 export const updateUser = (data) => {
   return axios.put(
-    `${USER_API}/users/updateUser`,
-    data
+    `${API}/userSvc/users/updateUser`,
+    data,
+    authHeader()
   );
 };
 
 export const deleteUser = (id) => {
   return axios.delete(
-    `${USER_API}/users/deleteUser`,
+    `${API}/userSvc/users/deleteUser`,
     {
+      ...authHeader(),
       data: {
         idReq: id,
       },

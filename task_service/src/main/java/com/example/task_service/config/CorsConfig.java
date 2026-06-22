@@ -1,50 +1,50 @@
-package com.example.task_service.config;
+// package com.example.task_service.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.cors.CorsConfigurationSource;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.web.cors.CorsConfiguration;
+// import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+// import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.List;
+// import java.util.List;
 
-@Configuration
-public class CorsConfig {
+// @Configuration
+// public class CorsConfig {
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+//     @Bean
+//     CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration config =
-                new CorsConfiguration();
+//         CorsConfiguration config =
+//                 new CorsConfiguration();
 
-        config.setAllowedOrigins(
-                List.of("http://localhost:5173")
-        );
+//         config.setAllowedOrigins(
+//                 List.of("http://localhost:5173")
+//         );
 
-        config.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"
-                )
-        );
+//         config.setAllowedMethods(
+//                 List.of(
+//                         "GET",
+//                         "POST",
+//                         "PUT",
+//                         "DELETE",
+//                         "OPTIONS"
+//                 )
+//         );
 
-        config.setAllowedHeaders(
-                List.of("*")
-        );
+//         config.setAllowedHeaders(
+//                 List.of("*")
+//         );
 
-        config.setAllowCredentials(true);
+//         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+//         UrlBasedCorsConfigurationSource source =
+//                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                config
-        );
+//         source.registerCorsConfiguration(
+//                 "/**",
+//                 config
+//         );
 
-        return source;
-    }
-}
+//         return source;
+//     }
+// }

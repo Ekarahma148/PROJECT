@@ -9,9 +9,9 @@ import {
   Calendar,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAllTask } from "../services/taskService";
-import { getAllUser } from "../services/userService";
-import AdminLayout from "../components/AdminLayout";
+import { getAllTask } from "../../services/taskService";
+import { getAllUser } from "../../services/userService";
+import AdminLayout from "../../components/AdminLayout";
 
 function AdminDashboard() {
   const [summary, setSummary] = useState({
@@ -40,12 +40,12 @@ function AdminDashboard() {
       setSummary({
         totalUser: users.length,
         totalTask: tasks.length,
-        completed: tasks.filter((t) => t.statusRes === "COMPLETED").length,
+        completed: tasks.filter((t) => t.statusRes === "COMPLETED"|| t.statusRes === "FINISH").length,
         pending: tasks.filter(
           (t) => t.statusRes === "PENDING" || t.statusRes === "IN_PROGRESS",
         ).length,
         overdue: tasks.filter(
-          (t) => new Date(t.deadlineRes) < now && t.statusRes !== "COMPLETED",
+          (t) => new Date(t.deadlineRes) < now && t.statusRes !== "COMPLETED" && t.statusRes !== "FINISH",
         ).length,
       });
     } catch (error) {
@@ -75,7 +75,6 @@ function AdminDashboard() {
     );
   }
 
-  // Konfigurasi style kartu statistik disesuaikan dengan tema gelap kontras tinggi
   const statCards = [
     {
       title: "Total User",

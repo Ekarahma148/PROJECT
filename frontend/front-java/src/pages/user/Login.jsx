@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { User, Lock, Loader2, CheckSquare } from "lucide-react";
-import { loginJwt, getUserByUsername } from "../services/authService";
+import { loginJwt, getUserByUsername } from "../../services/authService";
 
 function Login() {
   const [form, setForm] = useState({
@@ -15,7 +15,6 @@ function Login() {
     try {
       const loginResponse = await loginJwt(form);
       localStorage.setItem("token", loginResponse.data);
-
       const userResponse = await getUserByUsername(form.usernameReq);
       localStorage.setItem("userId", userResponse.data.idRes);
       localStorage.setItem("username", userResponse.data.usernameRes);
