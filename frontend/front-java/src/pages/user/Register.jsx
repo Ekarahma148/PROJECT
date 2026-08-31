@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { User, Mail, Tag, Lock, Loader2, Sparkles } from "lucide-react";
 import { registerUser } from "../../services/userService";
+import Swal from "sweetalert2";
+
 
 function Register() {
   const [form, setForm] = useState({
@@ -12,18 +14,34 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await registerUser(form);
-      alert("Register Berhasil");
-      window.location.href = "/login";
-    } catch (error) {
-      alert("Register Gagal");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    await registerUser(form);
+
+    await Swal.fire({
+      icon: "success",
+      title: "Registrasi Berhasil",
+      text: "Akun berhasil dibuat. Silakan login.",
+      confirmButtonColor: "#4F46E5",
+      confirmButtonText: "Login",
+    });
+
+    window.location.href = "/login";
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Registrasi Gagal",
+      text:
+        error?.response?.data?.message ||
+        "Terjadi kesalahan saat registrasi.",
+      confirmButtonColor: "#DC2626",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex bg-slate-950 font-sans">

@@ -22,7 +22,12 @@ import {
   createTask,
   updateTask,
 } from "../../services/taskService";
-import {downloadMyTask,downloadTemplate,uploadExcel} from "../../services/excelService";
+import {
+  downloadMyTask,
+  downloadTemplate,
+  uploadExcel,
+} from "../../services/excelService";
+import Swal from "sweetalert2";
 
 function TaskList() {
   const [tasks, setTasks] = useState([]);
@@ -89,6 +94,17 @@ function TaskList() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
+      const selectedDate = new Date(form.deadlineReq);
+
+      if (selectedDate <= new Date()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Deadline Tidak Valid",
+          text: "Deadline harus lebih besar dari waktu sekarang.",
+          confirmButtonColor: "#F59E0B",
+        });
+        return;
+      }
       const payload = {
         ...form,
         userIdReq: Number(localStorage.getItem("userId")),
@@ -96,10 +112,20 @@ function TaskList() {
 
       if (editMode) {
         await updateTask(payload);
-        alert("Task berhasil diupdate");
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Task berhasil diperbarui",
+          confirmButtonColor: "#4F46E5",
+        });
       } else {
         await createTask(payload);
-        alert("Task berhasil ditambah");
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Task berhasil ditambahkan",
+          confirmButtonColor: "#4F46E5",
+        });
       }
 
       setShowModal(false);
@@ -107,23 +133,47 @@ function TaskList() {
       loadData();
     } catch (error) {
       console.log(error);
-      alert("Gagal menyimpan task");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Task gagal disimpan",
+        confirmButtonColor: "#DC2626",
+      });
     }
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Apakah Anda yakin ingin menghapus task ini?",
-    );
-    if (!confirmDelete) return;
+    const result = await Swal.fire({
+      title: "Hapus Task?",
+      text: "Data yang dihapus tidak dapat dikembalikan.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#DC2626",
+      cancelButtonColor: "#64748B",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await deleteTask(id);
-      alert("Task berhasil dihapus");
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Task berhasil dihapus",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       loadData();
     } catch (error) {
       console.log(error);
-      alert("Gagal menghapus task");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Task gagal disimpan",
+        confirmButtonColor: "#DC2626",
+      });
     }
   };
 
@@ -178,7 +228,12 @@ function TaskList() {
       link.remove();
     } catch (error) {
       console.error(error);
-      alert("Gagal mengekspor data Excel");
+      Swal.fire({
+        icon: "error",
+        title: "Export Gagal",
+        text: "Tidak dapat mengexport data.",
+        confirmButtonColor: "#DC2626",
+      });
     }
   };
 
@@ -209,11 +264,21 @@ function TaskList() {
     try {
       setIsUploading(true);
       await uploadExcel(formData);
-      alert("Upload Excel berhasil!");
+      Swal.fire({
+        icon: "success",
+        title: "Upload Berhasil",
+        text: "File Excel berhasil diupload",
+        confirmButtonColor: "#4F46E5",
+      });
       loadData();
     } catch (error) {
       console.error(error);
-      alert("Upload Excel gagal. Pastikan format kolom sesuai template.");
+      Swal.fire({
+        icon: "error",
+        title: "Upload Gagal",
+        text: "Pastikan format Excel sesuai template.",
+        confirmButtonColor: "#DC2626",
+      });
     } finally {
       setIsUploading(false);
       e.target.value = ""; // Reset input file
@@ -636,6 +701,7 @@ function TaskList() {
                 </label>
                 <input
                   type="datetime-local"
+                  min={new Date().toISOString().slice(0, 16)}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 transition-all font-bold text-slate-700 bg-slate-50"
                   value={form.deadlineReq}
                   onChange={(e) =>

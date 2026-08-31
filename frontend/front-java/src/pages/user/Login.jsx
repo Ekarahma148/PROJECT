@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { User, Lock, Loader2, CheckSquare } from "lucide-react";
 import { loginJwt, getUserByUsername } from "../../services/authService";
+import Swal from "sweetalert2";
 
 function Login() {
   const [form, setForm] = useState({
@@ -9,30 +10,49 @@ function Login() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const loginResponse = await loginJwt(form);
-      localStorage.setItem("token", loginResponse.data);
-      const userResponse = await getUserByUsername(form.usernameReq);
-      localStorage.setItem("userId", userResponse.data.idRes);
-      localStorage.setItem("username", userResponse.data.usernameRes);
-      localStorage.setItem("role", userResponse.data.roleRes);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-      alert("Login Berhasil");
-      if (userResponse.data.roleRes === "ADMIN") {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/dashboard";
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Login Gagal");
-    } finally {
-      setIsLoading(false);
+  try {
+    const loginResponse = await loginJwt(form);
+
+    localStorage.setItem("token", loginResponse.data);
+
+    const userResponse = await getUserByUsername(form.usernameReq);
+
+    localStorage.setItem("userId", userResponse.data.idRes);
+    localStorage.setItem("username", userResponse.data.usernameRes);
+    localStorage.setItem("role", userResponse.data.roleRes);
+
+    await Swal.fire({
+      icon: "success",
+      title: "Login Berhasil",
+      text: `Selamat datang ${userResponse.data.usernameRes}`,
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    if (userResponse.data.roleRes === "ADMIN") {
+      window.location.href = "/admin";
+    } else {
+      window.location.href = "/dashboard";
     }
-  };
+  } catch (error) {
+    console.log(error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Login Gagal",
+      text:
+        error?.response?.data?.message ||
+        "Username atau password salah.",
+      confirmButtonColor: "#DC2626",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex bg-slate-950 font-sans">

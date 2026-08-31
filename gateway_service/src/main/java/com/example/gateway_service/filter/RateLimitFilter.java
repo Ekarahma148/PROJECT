@@ -36,10 +36,7 @@ public class RateLimitFilter implements GlobalFilter {
                         .getURI()
                         .getPath();
 
-        /*
-         * Rate limit hanya untuk login
-         * Sesuaikan path login milikmu
-         */
+       
         if (!path.contains("/login")
                 && !path.contains("/loginJwt")) {
 
